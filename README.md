@@ -30,7 +30,10 @@ plsql_logs/
 ├── deploy/
 │   └── deploy_database_logger.sql # Script de deployment
 ├── logger.sql                    # Archivo compilado completo
-└── prueba_def.sql               # Versión de desarrollo/test
+├── prueba_def.sql               # Versión de desarrollo/test
+├── requirements.txt             # Dependencias Python
+├── LICENSE                      # Licencia MIT
+└── README.md                    # Documentación del proyecto
 ```
 
 ## 🚀 Instalación y Deployment
@@ -217,7 +220,7 @@ El sistema utiliza variables DEFINE para personalización:
 
 ## 📄 Licencia
 
-[Especificar licencia del proyecto]
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
 ---
 
