@@ -1,20 +1,3 @@
-
-
--- Paquete de logging con chequeo de silenciamiento y trazabilidad de start/end execution
-CREATE OR REPLACE PACKAGE &NOMBRE_PAQUETE AS
-    FUNCTION start_execution(p_module_name VARCHAR2, p_ancestor_execution_id VARCHAR2 DEFAULT NULL) RETURN VARCHAR2;
-    PROCEDURE end_execution;
-
-    FUNCTION get_ancestor_execution RETURN VARCHAR2;
-    FUNCTION get_parent_execution_id RETURN VARCHAR2;
-
-    PROCEDURE log_debug(p_log_message VARCHAR2);
-    PROCEDURE log_info(p_log_message VARCHAR2);
-    PROCEDURE log_warn(p_log_message VARCHAR2);
-    PROCEDURE log_error(p_error_code VARCHAR2, p_error_message VARCHAR2);
-END;
-/
-
 CREATE OR REPLACE PACKAGE BODY &NOMBRE_PAQUETE AS
 
     -- Mapeo de número a nivel textual
@@ -29,58 +12,33 @@ CREATE OR REPLACE PACKAGE BODY &NOMBRE_PAQUETE AS
         END CASE;
     END numero_a_nivel;
 
-    -- Chequeo si el log debe ser silenciado, insensible a mayúsculas/minúsculas/espacios y semántica de nivel
+    -- Chequeo si el log debe ser silenciado, insensible a mayusculas/minusculas/espacios y semantica de nivel
     FUNCTION is_silenced(p_module_name VARCHAR2, p_insertion_type NUMBER) RETURN BOOLEAN IS
         v_count NUMBER;
     BEGIN
         SELECT COUNT(*) INTO v_count
         FROM &NOMBRE_TABLA_CFG
         WHERE module_name_upper = UPPER(TRIM(p_module_name))
-          AND (
-                insertion_type IS NULL 
-                OR p_insertion_type <= insertion_type
-              );
+          AND (insertion_type IS NULL OR p_insertion_type <= insertion_type);
         RETURN v_count > 0;
+    EXCEPTION
+        WHEN OTHERS THEN RETURN FALSE; -- Si no existe la tabla, no silenciar
     END is_silenced;
 
-    -- Procedimiento centralizado de inserción de logs
-    PROCEDURE insert_log(
-        p_execution_id          VARCHAR2,
-        p_ancestor_execution_id VARCHAR2,
-        p_session_id            VARCHAR2,
-        p_user_name             VARCHAR2,
-        p_module_name           VARCHAR2,
-        p_log_timestamp         TIMESTAMP DEFAULT SYSTIMESTAMP,
-        p_insertion_type        NUMBER,
-        p_log_message           VARCHAR2 DEFAULT NULL,
-        p_error_code            VARCHAR2 DEFAULT NULL,
-        p_error_message         VARCHAR2 DEFAULT NULL
-    ) IS
-        v_insertion_type_txt VARCHAR2(20);
-    PRAGMA AUTONOMOUS_TRANSACTION;
+    FUNCTION get_ancestor_execution RETURN VARCHAR2 IS
+        v_module_name VARCHAR2(100);
+        v_action_name VARCHAR2(100);
     BEGIN
-        v_insertion_type_txt := numero_a_nivel(p_insertion_type);
+        DBMS_APPLICATION_INFO.READ_MODULE(v_module_name, v_action_name);
+        RETURN v_action_name;
+    END;
 
-        -- Solo insertamos el log si no está silenciado
-        IF NOT is_silenced(p_module_name, p_insertion_type) THEN
-            INSERT INTO &NOMBRE_TABLA_LOG (
-                execution_id, ancestor_execution_id, session_id, user_name, module_name,
-                log_timestamp, insertion_type, log_message, error_code, error_message
-            ) VALUES (
-                p_execution_id,
-                p_ancestor_execution_id,
-                p_session_id,
-                p_user_name,
-                p_module_name,
-                p_log_timestamp,
-                v_insertion_type_txt,
-                p_log_message,
-                p_error_code,
-                p_error_message
-            );
-            COMMIT;
-        END IF;
-    END insert_log;
+    FUNCTION get_parent_execution_id RETURN VARCHAR2 IS
+        v_parent_id VARCHAR2(100);
+    BEGIN
+        DBMS_APPLICATION_INFO.READ_CLIENT_INFO(v_parent_id);
+        RETURN v_parent_id;
+    END;
 
     FUNCTION start_execution(p_module_name VARCHAR2, p_ancestor_execution_id VARCHAR2 DEFAULT NULL) RETURN VARCHAR2 IS
         v_execution_id VARCHAR2(32);
@@ -131,20 +89,44 @@ CREATE OR REPLACE PACKAGE BODY &NOMBRE_PAQUETE AS
         DBMS_APPLICATION_INFO.SET_MODULE('', '');
     END;
 
-    FUNCTION get_ancestor_execution RETURN VARCHAR2 IS
-        v_module_name VARCHAR2(100);
-        v_action_name VARCHAR2(100);
+    -- Procedimiento centralizado de inserción de logs
+    PROCEDURE insert_log(
+        p_execution_id          VARCHAR2,
+        p_ancestor_execution_id VARCHAR2,
+        p_session_id            VARCHAR2,
+        p_user_name             VARCHAR2,
+        p_module_name           VARCHAR2,
+        p_log_timestamp         TIMESTAMP DEFAULT SYSTIMESTAMP,
+        p_insertion_type        NUMBER,
+        p_log_message           VARCHAR2 DEFAULT NULL,
+        p_error_code            VARCHAR2 DEFAULT NULL,
+        p_error_message         VARCHAR2 DEFAULT NULL
+    ) IS
+        v_insertion_type_txt VARCHAR2(20);
+    PRAGMA AUTONOMOUS_TRANSACTION;
     BEGIN
-        DBMS_APPLICATION_INFO.READ_MODULE(v_module_name, v_action_name);
-        RETURN v_action_name;
-    END;
+        v_insertion_type_txt := numero_a_nivel(p_insertion_type);
 
-    FUNCTION get_parent_execution_id RETURN VARCHAR2 IS
-        v_parent_id VARCHAR2(100);
-    BEGIN
-        DBMS_APPLICATION_INFO.READ_CLIENT_INFO(v_parent_id);
-        RETURN v_parent_id;
-    END;
+        -- Solo insertamos el log si no está silenciado
+        IF NOT is_silenced(p_module_name, p_insertion_type) THEN
+            INSERT INTO &NOMBRE_TABLA_LOG (
+                execution_id, ancestor_execution_id, session_id, user_name, module_name,
+                log_timestamp, insertion_type, log_message, error_code, error_message
+            ) VALUES (
+                p_execution_id,
+                p_ancestor_execution_id,
+                p_session_id,
+                p_user_name,
+                p_module_name,
+                p_log_timestamp,
+                v_insertion_type_txt,
+                p_log_message,
+                p_error_code,
+                p_error_message
+            );
+            COMMIT;
+        END IF;
+    END insert_log;
 
     PROCEDURE log_debug(p_log_message VARCHAR2) IS
         v_execution_id VARCHAR2(32);

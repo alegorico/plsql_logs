@@ -1,0 +1,4 @@
+-- Nota: Los permisos sobre objetos creados en tu propio esquema
+-- se otorgan automaticamente al propietario. Si necesitas otorgar
+-- permisos a otros usuarios o esquemas, modifica este archivo
+-- agregando los GRANT correspondientes.

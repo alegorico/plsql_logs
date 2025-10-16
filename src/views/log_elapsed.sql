@@ -1,5 +1,4 @@
 
-
 -- Vista con tiempo transcurrido desde el registro anterior
 CREATE OR REPLACE VIEW vw_&NOMBRE_TABLA_LOG._elapsed AS
     SELECT
@@ -45,4 +44,3 @@ CREATE OR REPLACE VIEW vw_&NOMBRE_TABLA_LOG._elapsed AS
         session_id,
         log_timestamp,
         insertion_type;
-/

@@ -1,5 +1,11 @@
+-- Creación idempotente de la tabla de logs
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE &NOMBRE_TABLA_LOG';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
 
--- Creacion de la tabla de logs reordenada
 CREATE TABLE &NOMBRE_TABLA_LOG (
     execution_id          VARCHAR2(100),
     ancestor_execution_id VARCHAR2(100),
@@ -12,4 +18,3 @@ CREATE TABLE &NOMBRE_TABLA_LOG (
     error_code            VARCHAR2(50),
     error_message         VARCHAR2(4000)
 );
-
