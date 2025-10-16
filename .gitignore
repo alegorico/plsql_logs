@@ -75,7 +75,17 @@ ehthumbs.db
 Thumbs.db
 
 # Archivos compilados SQL (generados por MergeSourceFile)
-logger.sql
+# Estos archivos se generan dinámicamente desde las fuentes en src/
+*logger.sql
+*_with_tests.sql
+*tests*.sql
+cleanup_*.sql
+test_*.sql
+database_*.sql
+queue_*.sql
+generated_*.sql
+output_*.sql
+prueba*.sql
 
 # Logs locales
 *.log
