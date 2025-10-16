@@ -30,7 +30,6 @@ plsql_logs/
 ├── deploy/
 │   └── deploy_database_logger.sql # Script de deployment
 ├── logger.sql                    # Archivo compilado completo
-├── prueba_def.sql               # Versión de desarrollo/test
 ├── requirements.txt             # Dependencias Python
 ├── LICENSE                      # Licencia MIT
 └── README.md                    # Documentación del proyecto
@@ -71,19 +70,37 @@ Para generar el archivo SQL ejecutable desde las fuentes modulares:
 MergeSourceFile -i deploy\deploy_database_logger.sql -o logger.sql
 ```
 
-Este comando:
-1. Lee el archivo de deployment `deploy\deploy_database_logger.sql`
-2. Procesa las directivas `@` para incluir archivos fuente
-3. Genera un archivo SQL monolítico `logger.sql` listo para ejecutar
+> 📖 **Nota**: Para opciones avanzadas de `MergeSourceFile` (como `--skip-var` u otras), consulta la [documentación oficial de MergeSourceFile](https://pypi.org/project/MergeSourceFile/).
+
+El proceso de compilación:
+1. Lee el script de deployment que referencia todos los archivos fuente
+2. Combina todos los componentes modulares en un archivo único
+3. Genera `logger.sql` listo para ejecutar en Oracle
 
 ### Deployment en Base de Datos
 
-```sql
--- Conectar a Oracle como usuario con privilegios
-sqlplus usuario/password@database
+El archivo generado `logger.sql` es totalmente compatible con:
+- **SQL*Plus**: Herramienta de línea de comandos de Oracle
+- **SQL Developer**: IDE gráfico de Oracle
+- **SQLcl**: Herramienta moderna de línea de comandos de Oracle
 
--- Ejecutar el archivo compilado
-@logger.sql
+#### Deployment con SQL*Plus
+```bash
+# Conectar y ejecutar
+sqlplus usuario/password@database
+SQL> @logger.sql
+```
+
+#### Deployment con SQL Developer
+1. Abrir SQL Developer
+2. Conectar a la base de datos
+3. Abrir el archivo `logger.sql`
+4. Ejecutar como script (F5)
+
+#### Deployment con SQLcl
+```bash
+sql usuario/password@database
+SQL> @logger.sql
 ```
 
 ## 📊 Componentes del Sistema
@@ -193,10 +210,20 @@ El sistema utiliza variables DEFINE para personalización:
 - **Entorno Virtual**: Se recomienda usar un entorno virtual de Python para aislar las dependencias
 - **Archivos Fuente**: Mantener siempre actualizados los archivos en `src/`
 - **Compilación**: No editar directamente `logger.sql`, usar siempre el build system
-- **Testing**: Usar `prueba_def.sql` para pruebas rápidas de desarrollo
+- **Build Tool**: Consultar documentación de `MergeSourceFile` para opciones avanzadas
+- **Testing**: Compilar y probar en entorno de desarrollo antes de deployment
 - **Versionado**: Solo versionar archivos fuente, no los compilados
 - **Dependencias**: El archivo `requirements.txt` contiene todas las dependencias Python necesarias
-- **Gitignore**: Los archivos compilados (`logger.sql`, `prueba_def.sql`) están excluidos del control de versiones
+- **Gitignore**: Los archivos compilados (`logger.sql`) están excluidos del control de versiones
+
+### Compatibilidad Oracle
+
+El sistema está optimizado para Oracle Database y utiliza:
+- **Variables DEFINE**: Para configuración dinámica de nombres
+- **PRAGMA AUTONOMOUS_TRANSACTION**: Para logging independiente
+- **DBMS_APPLICATION_INFO**: Para trazabilidad de contexto
+- **Funciones analíticas**: LAG() para cálculo de tiempos transcurridos
+- **Columnas virtuales**: Para optimización de búsquedas case-insensitive
 
 ### Configuración del Entorno de Desarrollo
 

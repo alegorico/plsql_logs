@@ -76,7 +76,6 @@ Thumbs.db
 
 # Archivos compilados SQL (generados por MergeSourceFile)
 logger.sql
-prueba_def.sql
 
 # Logs locales
 *.log
