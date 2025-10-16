@@ -109,6 +109,12 @@ python generate_all.py database queue
 # Ver targets disponibles
 python generate_all.py --list
 
+# Obtener comandos manuales (si hay problemas con MergeSourceFile)
+python generate_all.py --manual
+
+# Comandos manuales para targets específicos
+python generate_all.py --manual database cleanup_database
+
 # Ayuda
 python generate_all.py --help
 ```

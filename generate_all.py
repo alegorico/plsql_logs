@@ -76,7 +76,9 @@ class LoggerGenerator:
             "MergeSourceFile",           # Instalado globalmente
             "python -m MergeSourceFile", # Módulo Python
             "py -m MergeSourceFile",     # Windows py launcher
-            f"python {self.scripts_path / 'mergeSourceFile.py'}"  # Local
+            f"python {self.scripts_path / 'mergeSourceFile.py'}",  # Script local
+            "python mergeSourceFile.py", # Script local sin path
+            "py mergeSourceFile.py"      # Script local con py launcher
         ]
         
         for cmd in commands:
@@ -94,10 +96,16 @@ class LoggerGenerator:
             except (subprocess.TimeoutExpired, subprocess.SubprocessError):
                 continue
                 
-        raise RuntimeError(
-            "No se pudo encontrar MergeSourceFile. "
-            "Instálalo con: pip install MergeSourceFile"
+        error_msg = (
+            "No se pudo encontrar la herramienta MergeSourceFile.\n\n"
+            "Opciones para solucionarlo:\n"
+            "1. Instalar globalmente: pip install MergeSourceFile\n"
+            "2. Activar entorno virtual si tienes uno: venv\\Scripts\\activate\n"
+            "3. Colocar mergeSourceFile.py en la carpeta 'scripts/'\n"
+            "4. Usar comandos manuales (ver README.md)\n\n"
+            f"Comandos probados: {', '.join(commands)}"
         )
+        raise RuntimeError(error_msg)
     
     def generate_file(self, key: str, config: Dict[str, str]) -> Tuple[bool, str]:
         """Genera un archivo específico"""
@@ -145,6 +153,16 @@ class LoggerGenerator:
                 return
         else:
             configs_to_generate = self.configs
+        
+        # Verificar si la herramienta está disponible
+        try:
+            self.find_merge_tool()
+        except RuntimeError as e:
+            print(f"✗ {e}\n")
+            print("Como alternativa, aquí están los comandos manuales:")
+            target_keys = list(configs_to_generate.keys()) if targets else None
+            self.print_manual_commands(target_keys)
+            return
         
         results = []
         
@@ -204,6 +222,24 @@ class LoggerGenerator:
         print("Targets disponibles:")
         for key, config in self.configs.items():
             print(f"  {key:<20} - {config['description']}")
+    
+    def print_manual_commands(self, targets: List[str] = None) -> None:
+        """Imprime comandos manuales como fallback"""
+        configs_to_show = self.configs if not targets else {k: v for k, v in self.configs.items() if k in targets}
+        
+        print("=" * 64)
+        print("COMANDOS MANUALES - EJECUTAR UNO POR UNO")
+        print("=" * 64)
+        print("# Instalar herramienta primero:")
+        print("pip install MergeSourceFile")
+        print("\n# Comandos de generación:")
+        
+        for key, config in configs_to_show.items():
+            input_file = self.deploy_path / config["input"]
+            output_file = self.base_path / config["output"]
+            print(f"MergeSourceFile -i \"{input_file}\" -o \"{output_file}\"  # {config['description']}")
+        
+        print("=" * 64)
 
 
 def main():
@@ -216,6 +252,8 @@ Ejemplos de uso:
   python generate_all.py                    # Generar todos los archivos
   python generate_all.py database queue     # Solo BD y colas básicas
   python generate_all.py --list             # Listar targets disponibles
+  python generate_all.py --manual           # Mostrar comandos manuales
+  python generate_all.py --manual database  # Comandos manuales para BD
   python generate_all.py cleanup_database   # Solo limpieza de BD
         """
     )
@@ -233,6 +271,12 @@ Ejemplos de uso:
     )
     
     parser.add_argument(
+        "--manual",
+        action="store_true", 
+        help="Mostrar comandos manuales para ejecutar"
+    )
+    
+    parser.add_argument(
         "--path",
         type=Path,
         default=Path.cwd(),
@@ -246,6 +290,10 @@ Ejemplos de uso:
         
         if args.list:
             generator.list_targets()
+            return
+            
+        if args.manual:
+            generator.print_manual_commands(args.targets if args.targets else None)
             return
         
         generator.generate_all(args.targets if args.targets else None)
