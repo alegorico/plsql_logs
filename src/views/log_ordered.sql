@@ -1,4 +1,3 @@
-
 -- Vista ordenada
 CREATE OR REPLACE VIEW vw_&NOMBRE_TABLA_LOG._ordered AS
     SELECT
@@ -19,5 +18,3 @@ CREATE OR REPLACE VIEW vw_&NOMBRE_TABLA_LOG._ordered AS
         session_id,
         log_timestamp,
         insertion_type;
-/
- 

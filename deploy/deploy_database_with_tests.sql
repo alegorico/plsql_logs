@@ -1,11 +1,9 @@
-
 -- ================================================================
--- DEPLOY SCRIPT: DATABASE LOGGER IMPLEMENTATION
+-- DEPLOY SCRIPT: DATABASE LOGGER CON PRUEBAS INCLUIDAS
 -- ================================================================
 -- Descripcion: Script de despliegue completo para la implementacion
---              de logging basada en base de datos Oracle
--- Arquitectura: Solo almacenamiento en tablas, sin colas
--- Componentes: Tablas, indices, vistas y paquete de implementacion
+--              de logging de base de datos con suite de pruebas
+-- Componentes: Sistema completo + scripts de pruebas
 -- ================================================================
 
 -- Configuracion especifica para implementacion de BD
@@ -25,3 +23,7 @@
 -- Paquete de implementacion (incluye especificacion)
 @src/packages/pkg_logger_spec.sql
 @src/packages/pkg_logger_database.sql
+
+-- Scripts de pruebas
+@tests/test_database_simple.sql
+@tests/test_database_logger.sql
