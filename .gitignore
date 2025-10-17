@@ -76,14 +76,15 @@ Thumbs.db
 
 # Archivos compilados SQL (generados por MergeSourceFile)
 # Estos archivos se generan dinámicamente desde las fuentes en src/
-*logger.sql
+# Ignorar archivos generados en la raíz, pero no en subdirectorios como tests/
+/*logger.sql
 *_with_tests.sql
 *tests*.sql
 cleanup_*.sql
 # Ignorar archivos de test generados, pero no los de la carpeta tests/
 /test_*.sql
-database_*.sql
-queue_*.sql
+/database_*.sql
+/queue_*.sql
 generated_*.sql
 output_*.sql
 prueba*.sql
