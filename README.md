@@ -312,9 +312,9 @@ v_child_id := &NOMBRE_PAQUETE..start_execution('BUSINESS_LOGIC');
 El sistema utiliza variables DEFINE para personalización:
 
 ```sql
-DEFINE NOMBRE_TABLA_LOG = logs_reg
-DEFINE NOMBRE_PAQUETE = zpkg_logger
-DEFINE NOMBRE_TABLA_CFG = cfg_log_reg_silence
+DEFINE NOMBRE_TABLA_LOG = 'logs_reg'
+DEFINE NOMBRE_PAQUETE = 'z'pkg_logger'
+DEFINE NOMBRE_TABLA_CFG = 'cfg_log_reg_silence'
 ```
 
 Antes del deployment, personaliza los archivos de configuración:
@@ -544,4 +544,4 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 ---
 
 **Desarrollado por**: Alejandro G.  
-**Última actualización**: 16 de octubre de 2025
+**Última actualización**: 17 de octubre de 2025

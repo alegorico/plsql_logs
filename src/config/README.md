@@ -27,8 +27,8 @@ Para personalizar los nombres de tablas y objetos:
 1. **Edita directamente** `config_database.sql` o `config_queue.sql`
 2. **Modifica los valores** de las variables `DEFINE` según tus necesidades:
    ```sql
-   DEFINE NOMBRE_TABLA_LOG = tu_tabla_logs
-   DEFINE NOMBRE_TABLA_CFG = tu_tabla_config
+   DEFINE NOMBRE_TABLA_LOG = 'tu_tabla_logs'
+   DEFINE NOMBRE_TABLA_CFG = 'tu_tabla_config'
    ```
 3. **Ejecuta el deploy** correspondiente
 
@@ -36,6 +36,6 @@ Para personalizar los nombres de tablas y objetos:
 
 ```sql
 -- En config_database.sql
-DEFINE NOMBRE_TABLA_LOG = logs_mi_proyecto
-DEFINE NOMBRE_TABLA_CFG = config_logs_proyecto
+DEFINE NOMBRE_TABLA_LOG = 'logs_mi_proyecto'
+DEFINE NOMBRE_TABLA_CFG = 'config_logs_proyecto'
 ```
