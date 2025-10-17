@@ -80,7 +80,8 @@ Thumbs.db
 *_with_tests.sql
 *tests*.sql
 cleanup_*.sql
-test_*.sql
+# Ignorar archivos de test generados, pero no los de la carpeta tests/
+/test_*.sql
 database_*.sql
 queue_*.sql
 generated_*.sql
