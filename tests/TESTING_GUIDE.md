@@ -86,17 +86,17 @@ DECLARE
     v_execution_id VARCHAR2(32);
 BEGIN
     -- 1. Configurar módulo (una sola vez)
-    INSERT INTO cfg_log_queue_alex (module_name, queue_enabled) 
+    INSERT INTO cfg_log_queue_logger (module_name, queue_enabled) 
     VALUES ('MI_APLICACION', 1);
     COMMIT;
     
     -- 2. Usar en tu código
-    v_execution_id := zpkg_logger_alex.start_execution('MI_APLICACION');
+    v_execution_id := pkg_logger.start_execution('MI_APLICACION');
     
-    zpkg_logger_alex.log_info('Aplicacion iniciada');
-    zpkg_logger_alex.log_warn('Advertencia de ejemplo');
+    pkg_logger.log_info('Aplicacion iniciada');
+    pkg_logger.log_warn('Advertencia de ejemplo');
     
-    zpkg_logger_alex.end_execution();
+    pkg_logger.end_execution();
 END;
 /
 ```
@@ -106,14 +106,14 @@ END;
 ### Silenciamiento por Nivel
 ```sql
 -- Silenciar DEBUG e INFO, permitir solo WARN y ERROR
-INSERT INTO cfg_log_reg_alex_silence (module_name, insertion_type) 
+INSERT INTO cfg_log_reg_logger_silence (module_name, insertion_type) 
 VALUES ('MI_MODULO', 2);
 ```
 
 ### Deshabilitar Cola para un Módulo
 ```sql
 -- El módulo seguirá funcionando pero no enviará a cola
-INSERT INTO cfg_log_queue_alex (module_name, queue_enabled) 
+INSERT INTO cfg_log_queue_logger (module_name, queue_enabled) 
 VALUES ('MI_MODULO', 0);
 ```
 
@@ -125,7 +125,7 @@ SELECT
     TO_CHAR(enq_time, 'DD/MM/YY HH24:MI:SS') as fecha,
     priority as nivel,
     user_data.text_vc as mensaje_json
-FROM qt_log_alex 
+FROM qt_log_logger 
 ORDER BY enq_time DESC;
 ```
 
@@ -135,16 +135,16 @@ SELECT
     COUNT(*) as total_mensajes,
     COUNT(CASE WHEN state = 0 THEN 1 END) as pendientes,
     COUNT(CASE WHEN state = 1 THEN 1 END) as procesados
-FROM qt_log_alex;
+FROM qt_log_logger;
 ```
 
 ### Configuración Actual
 ```sql
 -- Módulos con cola
-SELECT * FROM cfg_log_queue_alex;
+SELECT * FROM cfg_log_queue_logger;
 
 -- Módulos silenciados  
-SELECT * FROM cfg_log_reg_alex_silence;
+SELECT * FROM cfg_log_reg_logger_silence;
 ```
 
 ## Troubleshooting
@@ -152,17 +152,17 @@ SELECT * FROM cfg_log_reg_alex_silence;
 ### Cola No Recibe Mensajes
 1. Verificar que el módulo tenga cola habilitada:
    ```sql
-   SELECT * FROM cfg_log_queue_alex WHERE module_name = 'TU_MODULO';
+   SELECT * FROM cfg_log_queue_logger WHERE module_name = 'TU_MODULO';
    ```
 
 2. Verificar que no esté silenciado:
    ```sql
-   SELECT * FROM cfg_log_reg_alex_silence WHERE module_name = 'TU_MODULO';
+   SELECT * FROM cfg_log_reg_logger_silence WHERE module_name = 'TU_MODULO';
    ```
 
 3. Verificar estado de la cola:
    ```sql
-   SELECT * FROM user_queues WHERE name = 'QUEUE_LOG_ALEX';
+   SELECT * FROM user_queues WHERE name = 'QUEUE_LOG_LOGGER';
    ```
 
 ### Errores de Privilegios AQ
@@ -175,6 +175,6 @@ GRANT EXECUTE ON DBMS_AQADM TO tu_usuario;
 ### Limpiar Cola
 ```sql
 -- Eliminar todos los mensajes de la cola
-DELETE FROM qt_log_alex;
+DELETE FROM qt_log_logger;
 COMMIT;
 ```

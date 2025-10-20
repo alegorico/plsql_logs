@@ -80,7 +80,7 @@ En una sesión separada:
 
 ### ✅ Éxito para Colas
 - Todos los scripts ejecutan sin errores
-- Los mensajes aparecen en la cola `qt_log_alex`
+- Los mensajes aparecen en la cola `qt_log_logger`
 - La configuración de silenciamiento funciona correctamente
 - Las ejecuciones anidadas mantienen trazabilidad
 - Los mensajes JSON están bien formateados

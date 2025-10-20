@@ -7,9 +7,9 @@ Este documento describe el esquema completo del sistema de logging, incluyendo t
 El sistema utiliza las siguientes variables DEFINE para personalización:
 
 ```sql
-DEFINE NOMBRE_TABLA_LOG = logs_reg_alex           -- Tabla principal de logs
-DEFINE NOMBRE_PAQUETE = zpkg_logger_alex          -- Nombre del paquete
-DEFINE NOMBRE_TABLA_CFG = cfg_log_reg_alex_silence -- Tabla de configuración
+DEFINE NOMBRE_TABLA_LOG = logs_reg_logger           -- Tabla principal de logs
+DEFINE NOMBRE_PAQUETE = zpkg_logger_system          -- Nombre del paquete
+DEFINE NOMBRE_TABLA_CFG = cfg_log_reg_logger_silence -- Tabla de configuración
 ```
 
 ## Tablas

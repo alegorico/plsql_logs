@@ -87,7 +87,9 @@ Thumbs.db
 /queue_*.sql
 generated_*.sql
 output_*.sql
-prueba*.sql
+
+# Archivos de salida de ejecuciones SQL
+*.out
 
 # Logs locales
 *.log

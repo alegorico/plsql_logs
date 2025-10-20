@@ -10,7 +10,7 @@ SET LINESIZE 120;
 SET SERVEROUTPUT ON;
 
 PROMPT ================================================================
-PROMPT MONITOR DE COLA DE LOGGING - queue_log_alex
+PROMPT MONITOR DE COLA DE LOGGING - queue_log_logger
 PROMPT Presiona Ctrl+C para salir
 PROMPT ================================================================
 
@@ -21,7 +21,7 @@ DECLARE
 BEGIN
     LOOP
         -- Contar mensajes actuales
-        SELECT COUNT(*) INTO v_count FROM qt_log_alex;
+        SELECT COUNT(*) INTO v_count FROM qt_log_logger;
         
         -- Solo mostrar si hay cambios
         IF v_count != v_last_count THEN
@@ -54,7 +54,7 @@ SELECT
     retention_time,
     max_retries
 FROM user_queues 
-WHERE name = 'QUEUE_LOG_ALEX';
+WHERE name = 'QUEUE_LOG_logger';
 
 -- Mensajes por nivel de prioridad
 SELECT 
@@ -68,7 +68,7 @@ SELECT
         ELSE 'UNKNOWN'
     END as nivel_texto,
     COUNT(*) as cantidad
-FROM qt_log_alex 
+FROM qt_log_logger 
 GROUP BY priority 
 ORDER BY priority;
 
@@ -80,7 +80,7 @@ SELECT
     state as estado,
     SUBSTR(user_data.text_vc, 1, 60) as mensaje_preview
 FROM (
-    SELECT * FROM qt_log_alex 
+    SELECT * FROM qt_log_logger 
     ORDER BY enq_time DESC
 ) 
 WHERE rownum <= 5;
@@ -91,7 +91,7 @@ SELECT
     module_name,
     queue_enabled,
     queue_name
-FROM cfg_log_queue_alex 
+FROM cfg_log_queue_logger 
 WHERE queue_enabled = 1;
 
 PROMPT ================================================================

@@ -16,8 +16,8 @@ PROMPT ================================================================
 
 -- Limpiar datos de pruebas anteriores si existen
 BEGIN
-    DELETE FROM cfg_log_reg_alex_silence;
-    DELETE FROM cfg_log_queue_alex;
+    DELETE FROM cfg_log_reg_logger_silence;
+    DELETE FROM cfg_log_queue_logger;
     COMMIT;
     DBMS_OUTPUT.PUT_LINE('✓ Tablas de configuracion limpiadas');
 EXCEPTION
@@ -33,12 +33,12 @@ PROMPT ================================================================
 -- Configurar modulos de prueba
 BEGIN
     -- Modulo con cola habilitada
-    INSERT INTO cfg_log_queue_alex (module_name, queue_enabled, queue_name) 
-    VALUES ('TEST_MODULE_ENABLED', 1, 'queue_log_alex');
+    INSERT INTO cfg_log_queue_logger (module_name, queue_enabled, queue_name) 
+    VALUES ('TEST_MODULE_ENABLED', 1, 'queue_log_logger');
     
     -- Modulo con cola deshabilitada
-    INSERT INTO cfg_log_queue_alex (module_name, queue_enabled, queue_name) 
-    VALUES ('TEST_MODULE_DISABLED', 0, 'queue_log_alex');
+    INSERT INTO cfg_log_queue_logger (module_name, queue_enabled, queue_name) 
+    VALUES ('TEST_MODULE_DISABLED', 0, 'queue_log_logger');
     
     -- Modulo sin configuracion especial (usara defecto)
     -- TEST_MODULE_DEFAULT - no insertamos registro
@@ -50,7 +50,7 @@ END;
 
 -- Verificar configuracion
 SELECT 'CONFIG COLAS:' as tipo, module_name, queue_enabled, queue_name 
-FROM cfg_log_queue_alex 
+FROM cfg_log_queue_logger 
 ORDER BY module_name;
 
 PROMPT ================================================================
@@ -60,7 +60,7 @@ PROMPT ================================================================
 -- Configurar silenciamiento para pruebas
 BEGIN
     -- Silenciar DEBUG y INFO para un modulo
-    INSERT INTO cfg_log_reg_alex_silence (module_name, insertion_type) 
+    INSERT INTO cfg_log_reg_logger_silence (module_name, insertion_type) 
     VALUES ('TEST_MODULE_SILENT', 2); -- Solo WARN y ERROR pasaran
     
     COMMIT;
@@ -70,7 +70,7 @@ END;
 
 -- Verificar configuracion de silenciamiento
 SELECT 'CONFIG SILENCIO:' as tipo, module_name, insertion_type 
-FROM cfg_log_reg_alex_silence 
+FROM cfg_log_reg_logger_silence 
 ORDER BY module_name;
 
 PROMPT ================================================================
@@ -88,12 +88,12 @@ SELECT
     enqueue_enabled,
     dequeue_enabled
 FROM user_queues 
-WHERE name = 'QUEUE_LOG_ALEX';
+WHERE name = 'QUEUE_LOG_logger';
 
 -- Verificar tabla de cola
 SELECT 'TABLA COLA:' as tipo, table_name, queue_table 
 FROM user_queue_tables 
-WHERE queue_table = 'QT_LOG_ALEX';
+WHERE queue_table = 'QT_LOG_logger';
 
 PROMPT ================================================================
 PROMPT PRUEBA 4: PRUEBAS DE LOGGING BASICO
@@ -105,20 +105,20 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('--- Iniciando sesion de logging para TEST_MODULE_ENABLED ---');
     
     -- Iniciar ejecucion
-    v_execution_id := zpkg_logger_alex.start_execution('TEST_MODULE_ENABLED');
+    v_execution_id := zpkg_logger_logger.start_execution('TEST_MODULE_ENABLED');
     DBMS_OUTPUT.PUT_LINE('✓ Execution ID: ' || v_execution_id);
     
     -- Probar todos los niveles
-    zpkg_logger_alex.log_debug('Mensaje de debug - cola habilitada');
-    zpkg_logger_alex.log_info('Mensaje de info - cola habilitada');
-    zpkg_logger_alex.log_warn('Mensaje de warning - cola habilitada');
-    zpkg_logger_alex.log_error('ERR001', 'Mensaje de error - cola habilitada');
+    zpkg_logger_logger.log_debug('Mensaje de debug - cola habilitada');
+    zpkg_logger_logger.log_info('Mensaje de info - cola habilitada');
+    zpkg_logger_logger.log_warn('Mensaje de warning - cola habilitada');
+    zpkg_logger_logger.log_error('ERR001', 'Mensaje de error - cola habilitada');
     
     -- Esperar un poco para que se procesen los mensajes
     DBMS_LOCK.SLEEP(1);
     
     -- Finalizar ejecucion
-    zpkg_logger_alex.end_execution();
+    zpkg_logger_logger.end_execution();
     DBMS_OUTPUT.PUT_LINE('✓ Ejecucion finalizada para modulo con cola habilitada');
 END;
 /
@@ -133,15 +133,15 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('--- Iniciando sesion de logging para TEST_MODULE_DISABLED ---');
     
     -- Iniciar ejecucion
-    v_execution_id := zpkg_logger_alex.start_execution('TEST_MODULE_DISABLED');
+    v_execution_id := zpkg_logger_logger.start_execution('TEST_MODULE_DISABLED');
     DBMS_OUTPUT.PUT_LINE('✓ Execution ID: ' || v_execution_id);
     
     -- Probar logging (no deberia enviar a cola)
-    zpkg_logger_alex.log_info('Mensaje de info - cola DESHABILITADA');
-    zpkg_logger_alex.log_warn('Mensaje de warning - cola DESHABILITADA');
+    zpkg_logger_logger.log_info('Mensaje de info - cola DESHABILITADA');
+    zpkg_logger_logger.log_warn('Mensaje de warning - cola DESHABILITADA');
     
     -- Finalizar ejecucion
-    zpkg_logger_alex.end_execution();
+    zpkg_logger_logger.end_execution();
     DBMS_OUTPUT.PUT_LINE('✓ Ejecucion finalizada para modulo con cola deshabilitada');
 END;
 /
@@ -156,24 +156,24 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('--- Iniciando sesion de logging para TEST_MODULE_SILENT ---');
     
     -- Configurar cola para este modulo
-    INSERT INTO cfg_log_queue_alex (module_name, queue_enabled, queue_name) 
-    VALUES ('TEST_MODULE_SILENT', 1, 'queue_log_alex');
+    INSERT INTO cfg_log_queue_logger (module_name, queue_enabled, queue_name) 
+    VALUES ('TEST_MODULE_SILENT', 1, 'queue_log_logger');
     COMMIT;
     
     -- Iniciar ejecucion
-    v_execution_id := zpkg_logger_alex.start_execution('TEST_MODULE_SILENT');
+    v_execution_id := zpkg_logger_logger.start_execution('TEST_MODULE_SILENT');
     DBMS_OUTPUT.PUT_LINE('✓ Execution ID: ' || v_execution_id);
     
     -- Estos mensajes deberian ser silenciados (DEBUG=1, INFO=2, config=2)
-    zpkg_logger_alex.log_debug('DEBUG silenciado - NO deberia aparecer en cola');
-    zpkg_logger_alex.log_info('INFO silenciado - NO deberia aparecer en cola');
+    zpkg_logger_logger.log_debug('DEBUG silenciado - NO deberia aparecer en cola');
+    zpkg_logger_logger.log_info('INFO silenciado - NO deberia aparecer en cola');
     
     -- Estos mensajes NO deberian ser silenciados (WARN=3, ERROR=4 > config=2)
-    zpkg_logger_alex.log_warn('WARNING NO silenciado - SI deberia aparecer en cola');
-    zpkg_logger_alex.log_error('ERR002', 'ERROR NO silenciado - SI deberia aparecer en cola');
+    zpkg_logger_logger.log_warn('WARNING NO silenciado - SI deberia aparecer en cola');
+    zpkg_logger_logger.log_error('ERR002', 'ERROR NO silenciado - SI deberia aparecer en cola');
     
     -- Finalizar ejecucion
-    zpkg_logger_alex.end_execution();
+    zpkg_logger_logger.end_execution();
     DBMS_OUTPUT.PUT_LINE('✓ Ejecucion finalizada para modulo silenciado');
 END;
 /
@@ -189,34 +189,34 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('--- Prueba de ejecuciones anidadas ---');
     
     -- Ejecucion padre
-    v_parent_execution_id := zpkg_logger_alex.start_execution('TEST_PARENT_MODULE');
+    v_parent_execution_id := zpkg_logger_logger.start_execution('TEST_PARENT_MODULE');
     DBMS_OUTPUT.PUT_LINE('✓ Parent Execution ID: ' || v_parent_execution_id);
     
-    zpkg_logger_alex.log_info('Mensaje desde el proceso padre');
+    zpkg_logger_logger.log_info('Mensaje desde el proceso padre');
     
     -- Ejecucion hija (deberia detectar automaticamente el padre)
-    v_child_execution_id := zpkg_logger_alex.start_execution('TEST_CHILD_MODULE');
+    v_child_execution_id := zpkg_logger_logger.start_execution('TEST_CHILD_MODULE');
     DBMS_OUTPUT.PUT_LINE('✓ Child Execution ID: ' || v_child_execution_id);
     
-    zpkg_logger_alex.log_info('Mensaje desde el proceso hijo');
-    zpkg_logger_alex.log_warn('Warning desde proceso hijo');
+    zpkg_logger_logger.log_info('Mensaje desde el proceso hijo');
+    zpkg_logger_logger.log_warn('Warning desde proceso hijo');
     
     -- Finalizar hijo primero
-    zpkg_logger_alex.end_execution();
+    zpkg_logger_logger.end_execution();
     DBMS_OUTPUT.PUT_LINE('✓ Proceso hijo finalizado');
     
     -- Continuar con padre
-    zpkg_logger_alex.log_info('Mensaje padre despues de hijo');
+    zpkg_logger_logger.log_info('Mensaje padre despues de hijo');
     
     -- Finalizar padre
-    zpkg_logger_alex.end_execution();
+    zpkg_logger_logger.end_execution();
     DBMS_OUTPUT.PUT_LINE('✓ Proceso padre finalizado');
     
     -- Configurar colas para estos modulos
-    INSERT INTO cfg_log_queue_alex (module_name, queue_enabled, queue_name) 
-    VALUES ('TEST_PARENT_MODULE', 1, 'queue_log_alex');
-    INSERT INTO cfg_log_queue_alex (module_name, queue_enabled, queue_name) 
-    VALUES ('TEST_CHILD_MODULE', 1, 'queue_log_alex');
+    INSERT INTO cfg_log_queue_logger (module_name, queue_enabled, queue_name) 
+    VALUES ('TEST_PARENT_MODULE', 1, 'queue_log_logger');
+    INSERT INTO cfg_log_queue_logger (module_name, queue_enabled, queue_name) 
+    VALUES ('TEST_CHILD_MODULE', 1, 'queue_log_logger');
     COMMIT;
 END;
 /
@@ -238,7 +238,7 @@ SELECT
     COUNT(*) as total_mensajes,
     SUM(CASE WHEN state = 0 THEN 1 ELSE 0 END) as pendientes,
     SUM(CASE WHEN state = 1 THEN 1 ELSE 0 END) as procesados
-FROM qt_log_alex;
+FROM qt_log_logger;
 
 -- Ver algunos mensajes de la cola (muestra del contenido)
 SELECT 
@@ -248,7 +248,7 @@ SELECT
     priority as nivel,
     state as estado,
     SUBSTR(user_data.text_vc, 1, 100) as mensaje_json
-FROM qt_log_alex 
+FROM qt_log_logger 
 WHERE rownum <= 5
 ORDER BY enq_time DESC;
 
@@ -273,7 +273,7 @@ BEGIN
     FOR i IN 1..3 LOOP
         BEGIN
             DBMS_AQ.DEQUEUE(
-                queue_name         => 'queue_log_alex',
+                queue_name         => 'queue_log_logger',
                 dequeue_options    => v_dequeue_options,
                 message_properties => v_message_props,
                 payload            => v_message,
@@ -311,12 +311,12 @@ SELECT
     COUNT(*) as mensajes_restantes,
     MIN(enq_time) as primer_mensaje,
     MAX(enq_time) as ultimo_mensaje
-FROM qt_log_alex;
+FROM qt_log_logger;
 
 -- Limpiar datos de prueba
 BEGIN
-    DELETE FROM cfg_log_reg_alex_silence WHERE module_name LIKE 'TEST_%';
-    DELETE FROM cfg_log_queue_alex WHERE module_name LIKE 'TEST_%';
+    DELETE FROM cfg_log_reg_logger_silence WHERE module_name LIKE 'TEST_%';
+    DELETE FROM cfg_log_queue_logger WHERE module_name LIKE 'TEST_%';
     COMMIT;
     DBMS_OUTPUT.PUT_LINE('✓ Configuraciones de prueba eliminadas');
 END;
